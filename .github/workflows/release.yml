@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: python -m pytest -q
+
+      - name: Build
+        run: pyinstaller --noconfirm --clean dragonscribe.spec
+
+      - name: Smoke-test the build
+        shell: pwsh
+        run: |
+          # GUI-subsystem exe: Start-Process -Wait so the shell actually blocks
+          # on it and we can read the real exit code.
+          $p = Start-Process -FilePath dist/Dragonscribe/Dragonscribe.exe -ArgumentList '--selfcheck' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "selfcheck failed (exit $($p.ExitCode))" }
+          Get-Content dist/Dragonscribe/selfcheck.txt
+          Remove-Item dist/Dragonscribe/selfcheck.txt -ErrorAction SilentlyContinue
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          Compress-Archive -Path dist/Dragonscribe/* -DestinationPath "Dragonscribe-$tag.zip"
+          "ASSET=Dragonscribe-$tag.zip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Create release and upload asset
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          # Create the release (ignore error if it already exists), then upload
+          # the asset over the REST API with an explicit token so the upload
+          # cannot pick up a stale checkout credential.
+          gh release create $tag --title $tag --notes "Dragonscribe $tag" 2>$null
+          $repo = "${{ github.repository }}"
+          $rel = gh api "repos/$repo/releases/tags/$tag" | ConvertFrom-Json
+          $name = $env:ASSET
+          $uploadUrl = "https://uploads.github.com/repos/$repo/releases/$($rel.id)/assets?name=$name"
+          Invoke-RestMethod -Method Post -Uri $uploadUrl `
+            -Headers @{ Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}"; "Content-Type" = "application/zip" } `
+            -InFile $name
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

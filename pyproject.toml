@@ -1,0 +1,18 @@
+[project]
+name = "dragonscribe"
+version = "0.1.0.0"
+description = "A save editor for RuneScape: Dragonwilds"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "AemiliusXIV" }]
+dependencies = ["pywebview==6.2.1", "psutil==7.2.2"]
+
+[project.scripts]
+dragonscribe = "dragonscribe.app:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

@@ -1,0 +1,20 @@
+Dragonscribe
+An unofficial save editor for RuneScape: Dragonwilds.
+
+RuneScape and RuneScape: Dragonwilds are trademarks of Jagex Limited. This
+project is unofficial and is not affiliated with or endorsed by Jagex Limited.
+
+The save-format research that makes this tool possible was pioneered by the
+community. In particular, the world-mode and char_type mechanics were first
+documented by haithemobeidi in the RSDragonWilds-WorldEditor project
+(https://github.com/haithemobeidi/RSDragonWilds-WorldEditor). Dragonscribe is
+an independent, clean-room reimplementation; no source code was copied. Credit
+and thanks for the reverse-engineering groundwork.
+
+This application uses the following third-party packages, each distributed
+under its own license:
+
+- pywebview
+- psutil
+
+The standalone build is produced with PyInstaller.

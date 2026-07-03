@@ -1,0 +1,4 @@
+# Build + test tooling (not needed to run from source).
+-r requirements.txt
+pyinstaller==6.21.0
+pytest==8.3.4

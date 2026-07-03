@@ -1,0 +1,30 @@
+# Local AI-assistant artifacts — not for public repo
+CLAUDE.md
+.claude/
+.claudeignore
+*.local.md
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# PyInstaller build output
+build/
+dist/
+*.spec
+
+# Editor/OS cruft
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Never commit real player saves
+*.sav
+*.json.bak
+PREEDIT_*
+PREREVERT_*

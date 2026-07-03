@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dragonscribe</title>
+<style>
+:root{
+  --ink:#141210; --paper:#f3efe4; --card:#ffffff;
+  --acc:#ff4d00; --acc2:#1747ff; --hl:#ffd400;
+  --red:#e5352b; --green:#0aa050; --blue:#1747ff; --purple:#7c3aed;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.5 "Inter","Segoe UI",system-ui,sans-serif;font-weight:500;
+  -webkit-user-select:none;user-select:none;}
+header{padding:20px 24px;border-bottom:3px solid var(--ink);background:var(--hl);}
+h1{margin:0;font-size:28px;font-weight:900;letter-spacing:-0.5px;text-transform:uppercase;color:var(--ink);}
+h1 .mark{color:var(--acc);}
+.sub{margin:3px 0 0;font-weight:700;font-size:12.5px;}
+.save-dir{margin-top:8px;font-size:11.5px;font-weight:600;}
+.folder-btn{margin-top:8px;background:var(--card);border:2px solid var(--ink);
+  box-shadow:3px 3px 0 var(--ink);padding:5px 11px;font:inherit;font-weight:700;font-size:11.5px;cursor:pointer;}
+.folder-btn:hover{background:var(--hl);}
+.tabs{display:flex;gap:8px;padding:12px 24px;border-bottom:3px solid var(--ink);background:var(--paper);}
+.tab{background:var(--card);border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);
+  padding:8px 14px;font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;text-transform:uppercase;color:var(--ink);}
+.tab.active{background:var(--acc);color:#fff;}
+.hidden,.view.hidden,.tab.hidden{display:none !important;}
+main{padding:22px 24px 44px;max-width:900px;margin:0 auto;}
+.banner{display:none;margin:0 0 16px;padding:12px 14px;border:2px solid var(--ink);
+  box-shadow:4px 4px 0 var(--ink);background:var(--red);color:#fff;font-weight:700;}
+.banner.show{display:block;}
+h2{font-size:14px;text-transform:uppercase;letter-spacing:0.5px;font-weight:900;margin:24px 0 12px;}
+.note{font-size:12.5px;font-weight:600;background:var(--card);border:2px solid var(--ink);
+  box-shadow:4px 4px 0 var(--ink);padding:12px 14px;margin:0 0 16px;}
+.card{background:var(--card);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);
+  padding:15px 17px;margin-bottom:18px;}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.name{font-weight:900;font-size:16px;}
+.meta{font-size:11.5px;font-weight:600;margin-top:3px;}
+.badge{display:inline-block;padding:2px 9px;font-size:11px;font-weight:800;border:2px solid var(--ink);
+  margin-left:8px;text-transform:uppercase;color:#fff;}
+.badge.standard{background:var(--blue);} .badge.hard{background:var(--hl);color:var(--ink);}
+.badge.custom{background:var(--purple);} .badge.unknown{background:var(--red);}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.set-label{font-size:11.5px;font-weight:800;text-transform:uppercase;}
+button{font:inherit;font-weight:800;font-size:12px;cursor:pointer;background:var(--card);color:var(--ink);
+  border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:6px 12px;text-transform:uppercase;}
+button:hover:not(:disabled){background:var(--hl);}
+button:active:not(:disabled){box-shadow:1px 1px 0 var(--ink);transform:translate(2px,2px);}
+button:disabled{opacity:0.4;box-shadow:none;cursor:default;}
+button.current{background:var(--acc);color:#fff;}
+button.ghost{box-shadow:none;border-color:transparent;background:transparent;text-decoration:underline;}
+.empty{font-weight:700;padding:8px 2px;}
+.gate{max-width:560px;margin:8px auto;background:var(--card);border:3px solid var(--ink);
+  box-shadow:8px 8px 0 var(--red);padding:22px 24px;}
+.gate h2{color:var(--acc);}
+.gate-warn{font-size:13px;font-weight:600;line-height:1.55;}
+.gate-check{display:flex;align-items:center;gap:8px;margin:16px 0;font-weight:700;cursor:pointer;}
+#gateContinue,#appContinue{background:var(--acc);color:#fff;}
+#gateContinue:disabled,#appContinue:disabled{opacity:0.4;}
+#appContinue{margin-top:14px;}
+.skill-row{display:grid;grid-template-columns:minmax(0,1fr) 100px max-content;align-items:center;
+  gap:12px;padding:10px 2px;border-bottom:2px solid var(--ink);}
+.skill-row:last-child{border-bottom:none;}
+.skill-name{font-weight:800;}
+.skill-lvl{font-weight:800;color:var(--acc2);font-variant-numeric:tabular-nums;}
+.skill-edit{justify-self:end;display:flex;gap:6px;align-items:center;}
+.skill-edit input{width:56px;background:var(--card);border:2px solid var(--ink);padding:6px;
+  font:inherit;font-weight:700;text-align:center;}
+.cat-head{font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:900;
+  margin:16px 0 6px;background:var(--ink);color:var(--hl);display:inline-block;padding:2px 9px;}
+.risk-banner{display:flex;gap:10px;margin:0 0 14px;padding:12px 14px;border:2px solid var(--ink);
+  box-shadow:4px 4px 0 var(--ink);background:var(--hl);color:var(--ink);font-weight:700;font-size:12.5px;line-height:1.5;}
+.risk-banner a{color:var(--acc2);}
+.reveal-wrap{text-align:center;margin:28px 0;}
+.reveal-btn{background:var(--card);border:2px dashed var(--ink);padding:9px 16px;font:inherit;
+  font-weight:800;cursor:pointer;text-transform:uppercase;font-size:12px;}
+.reveal-btn:hover{background:var(--hl);}
+.app-gate{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(20,18,16,0.45);}
+.app-gate.hidden{display:none;}
+.app-gate-box{background:var(--card);border:3px solid var(--ink);box-shadow:10px 10px 0 var(--acc);
+  padding:24px 26px;max-width:540px;width:100%;}
+.app-gate-box h2{color:var(--acc);margin:0 0 6px;font-size:20px;text-transform:uppercase;}
+.app-gate-box p{font-weight:600;font-size:13px;margin:6px 0 10px;}
+.app-gate-box ul{margin:0 0 6px;padding-left:18px;}
+.app-gate-box li{font-weight:600;margin-bottom:6px;font-size:12.8px;}
+.app-gate-box li a{color:var(--acc2);}
+.modal-overlay{display:none;position:fixed;inset:0;z-index:60;background:rgba(20,18,16,0.45);
+  align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--card);border:3px solid var(--ink);box-shadow:8px 8px 0 var(--ink);
+  padding:20px 22px;max-width:420px;width:86%;}
+.modal-text{font-weight:800;font-size:16px;margin:0 0 6px;}
+.modal-sub{font-size:12px;font-weight:600;margin:0 0 16px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:9px;}
+#modalOk{background:var(--acc);color:#fff;}
+footer{border-top:3px solid var(--ink);padding:14px 24px;text-align:center;font-size:11.5px;
+  font-weight:600;background:var(--hl);}
+footer a{color:var(--acc2);} .disclaimer{font-size:10.5px;margin-top:4px;}
+#toast{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);background:var(--ink);color:#fff;
+  border:2px solid var(--ink);padding:10px 16px;font-weight:700;font-size:13px;opacity:0;
+  pointer-events:none;transition:opacity .18s;z-index:50;}
+#toast.show{opacity:1;} #toast.err{background:var(--red);} #toast.ok{background:var(--green);}
+</style>
+</head>
+<body>
+  <div id="appGate" class="app-gate">
+    <div class="app-gate-box">
+      <h2>Before you continue</h2>
+      <p>Dragonscribe edits your RuneScape: Dragonwilds save files directly. Please read this first.</p>
+      <ul>
+        <li><strong>Close the game completely</strong> before editing. It caches saves in memory and can overwrite or corrupt your changes.</li>
+        <li>A timestamped <strong>backup</strong> is written before every change, but keeping your own copy never hurts.</li>
+        <li>Editing saves with third-party tools may breach the game's <strong>Terms of Service</strong> and could put your account at risk, especially on multiplayer or shared worlds. Use at your own risk.</li>
+        <li>This is community software with <strong>no warranty</strong>. If something breaks you can <a id="appReportLink" href="#" target="_blank" rel="noreferrer">open a GitHub issue</a>, but help isn't guaranteed.</li>
+        <li>The developer accepts <strong>no liability</strong> for lost progress, corrupted saves, or account action.</li>
+      </ul>
+      <label class="gate-check"><input type="checkbox" id="appAgree"> I understand and accept these risks.</label>
+      <button id="appContinue" disabled>Enter Dragonscribe</button>
+    </div>
+  </div>
+
+  <header>
+    <h1>Dragon<span class="mark">scribe</span></h1>
+    <p class="sub">Save editor for RuneScape: Dragonwilds: world mode &amp; character compatibility</p>
+    <p class="save-dir" id="saveDir">Locating saves…</p>
+    <button id="chooseFolder" class="folder-btn">Change save folder…</button>
+  </header>
+
+  <nav class="tabs">
+    <button id="tabMain" class="tab active">Worlds &amp; Characters</button>
+    <button id="tabSkills" class="tab hidden">Advanced: Skills</button>
+  </nav>
+
+  <main>
+    <div id="viewMain" class="view">
+    <div class="banner" id="gameBanner">
+      <strong>The game is running.</strong> Close it completely before editing; the game caches
+      saves in memory and will overwrite your changes (or corrupt the file). Editing is disabled
+      until it's closed.
+    </div>
+
+    <h2>Worlds</h2>
+    <div class="note">
+      Converting a world to <strong>Custom</strong> unlocks all difficulty sliders, but
+      <strong>disables achievements</strong> while it stays custom. Reverting to Standard restores
+      them. Custom worlds need characters set to <em>Custom</em> below; the two must match.
+      A heads-up from the original tool: conversion can disturb locked chests, protection totems
+      and privacy settings, so clear those first.
+    </div>
+    <div id="worlds"></div>
+
+    <h2>Characters</h2>
+    <div class="note">
+      A character's compatibility must match the world it joins: <strong>Standard</strong> for
+      Standard/Hard worlds, <strong>Custom</strong> for Custom worlds. The setting is mutually
+      exclusive; a Custom character can't join Standard worlds, and vice versa.
+    </div>
+    <div id="characters"></div>
+
+    <div class="reveal-wrap">
+      <button id="revealAdvanced" class="reveal-btn">Enable advanced tools (skill editing)…</button>
+    </div>
+    </div><!-- /viewMain -->
+
+    <div id="viewSkills" class="view hidden">
+      <div id="skillsGate" class="gate">
+        <h2>Advanced: Character Skills</h2>
+        <p class="gate-warn">
+          This page edits gameplay values (skill levels). Using it may breach the game's Terms of
+          Service and can get you <strong>banned on multiplayer or shared servers</strong>. Use it
+          only on your own singleplayer worlds. Every change is backed up first, but you use this
+          entirely at your own risk.
+        </p>
+        <p class="gate-warn">
+          This is also a <strong>relatively untested feature</strong>. If something breaks you can
+          open a report on the project's GitHub, but help is <strong>not guaranteed</strong> and may
+          not be possible. The developer accepts <strong>no liability</strong> for any outcome,
+          including lost progress, corrupted saves, or account action.
+        </p>
+        <label class="gate-check">
+          <input type="checkbox" id="gateAgree"> I understand and accept the risk.
+        </label>
+        <button id="gateContinue" disabled>Continue</button>
+      </div>
+      <div id="skillsBody" class="hidden">
+        <div class="risk-banner">
+          <span aria-hidden="true">⚠</span>
+          <span>
+            <strong>Advanced editing is on.</strong> Reminder: these writes are real and apply the
+            next time the character loads. Double-check every change, keep the game closed, and stay
+            on your own singleplayer worlds. Backups happen automatically. Hit a snag?
+            <a id="reportLink" href="#" target="_blank" rel="noreferrer">open a report</a>
+            (help isn't guaranteed).
+          </span>
+        </div>
+        <div class="note">
+          Setting a level writes the exact XP for that level (level 99 = 1,000,000 XP). Each change
+          asks you to confirm the exact before and after value. Close the game first.
+        </div>
+        <div id="skillsChars"></div>
+      </div>
+    </div><!-- /viewSkills -->
+  </main>
+
+  <footer>
+    Developed by <a href="#" id="repoLink">AemiliusXIV</a>
+    <div class="disclaimer">
+      Unofficial fan tool. Not affiliated with or endorsed by Jagex. Editing saves may breach the
+      game's Terms of Service; use at your own risk. Always keep a backup.
+    </div>
+  </footer>
+
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal">
+      <p id="modalText" class="modal-text"></p>
+      <p class="modal-sub">A timestamped backup is saved automatically before any change.</p>
+      <div class="modal-actions">
+        <button id="modalCancel" class="ghost">Cancel</button>
+        <button id="modalOk">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+<script>
+  let state = null;
+  let busy = false;
+
+  const $ = (id) => document.getElementById(id);
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  // Plain-language descriptions so nothing reads as a raw flag or number.
+  const WORLD_HINT = {
+    standard: "Default difficulty, achievements enabled",
+    hard: "Tougher enemies, achievements enabled",
+    custom: "Difficulty sliders unlocked, achievements disabled",
+  };
+  const CHAR_JOINS = {
+    standard: "Currently joins Standard &amp; Hard worlds",
+    custom: "Currently joins Custom worlds",
+    unknown: "Unrecognized compatibility setting",
+  };
+
+  function toast(msg, kind) {
+    const t = $("toast");
+    t.textContent = msg;
+    t.className = "show " + (kind || "");
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.className = ""; }, 3400);
+  }
+
+  function badge(label, cls) {
+    return `<span class="badge ${cls}">${label}</span>`;
+  }
+
+  // Promise-based confirm using the in-app modal (window.confirm is unreliable
+  // inside the webview).
+  function confirmDialog(message) {
+    return new Promise((resolve) => {
+      const overlay = $("modalOverlay");
+      $("modalText").textContent = message;
+      overlay.classList.add("show");
+      const done = (val) => {
+        overlay.classList.remove("show");
+        $("modalOk").onclick = null;
+        $("modalCancel").onclick = null;
+        resolve(val);
+      };
+      $("modalOk").onclick = () => done(true);
+      $("modalCancel").onclick = () => done(false);
+    });
+  }
+
+  function worldName(pathEnc) {
+    const w = state.worlds.find((x) => x.path === decodeURIComponent(pathEnc));
+    return w ? w.name.replace(/\.sav$/i, "") : "this world";
+  }
+  function charName(pathEnc) {
+    const c = state.characters.find((x) => x.path === decodeURIComponent(pathEnc));
+    return c ? c.name.replace(/\.json$/i, "") : "this character";
+  }
+
+  async function api(method, ...args) {
+    // pywebview injects window.pywebview.api after the bridge is ready.
+    return window.pywebview.api[method](...args);
+  }
+
+  function render() {
+    const s = state;
+    $("saveDir").textContent = s.save_dir ? ("Saves: " + s.save_dir) : "No save folder found.";
+    $("gameBanner").classList.toggle("show", s.game_running);
+    $("repoLink").href = s.app.repo_url;
+    const arl = $("appReportLink"); if (arl && s.app.repo_url) arl.href = s.app.repo_url + "/issues";
+
+    const disabled = s.game_running;
+
+    // Worlds
+    const wEl = $("worlds");
+    if (!s.worlds.length) {
+      wEl.innerHTML = '<div class="empty">No worlds found.</div>';
+    } else {
+      wEl.innerHTML = s.worlds.map((w) => {
+        const cls = ["standard","hard","custom"].includes(w.mode) ? w.mode : "unknown";
+        const modeLabel = w.mode.charAt(0).toUpperCase() + w.mode.slice(1);
+        const modeBtn = (m, label) => {
+          const isCur = w.mode === m;
+          return `<button class="${isCur ? "current" : ""}" ${isCur || disabled ? "disabled" : ""}
+                   onclick="setWorld('${encodeURIComponent(w.path)}','${m}')">${label}</button>`;
+        };
+        const restore = w.backups > 0
+          ? `<button class="ghost" ${disabled ? "disabled" : ""}
+               onclick="restore('${encodeURIComponent(w.path)}')">Restore backup</button>` : "";
+        const hint = WORLD_HINT[w.mode] || "Unrecognized mode";
+        const backupText = w.backups > 0 ? ` · ${w.backups} backup${w.backups===1?"":"s"}` : "";
+        return `<div class="card">
+          <div class="row">
+            <div>
+              <span class="name">${w.name.replace(/\.sav$/i,"")}</span>${badge(modeLabel, cls)}
+              <div class="meta">${hint}${backupText}</div>
+            </div>
+            <div class="actions">
+              <span class="set-label">Set to:</span>
+              ${modeBtn("standard","Standard")}
+              ${modeBtn("hard","Hard")}
+              ${modeBtn("custom","Custom")}
+              ${restore}
+            </div>
+          </div>
+        </div>`;
+      }).join("");
+    }
+
+    // Characters
+    const cEl = $("characters");
+    if (!s.characters.length) {
+      cEl.innerHTML = '<div class="empty">No characters found.</div>';
+    } else {
+      cEl.innerHTML = s.characters.map((c) => {
+        const isStd = c.char_type === 0;
+        const isCus = c.char_type === 3;
+        const cls = isCus ? "custom" : (isStd ? "standard" : "unknown");
+        const label = isCus ? "Custom" : (isStd ? "Standard" : "Unrecognized");
+        const joins = isCus ? CHAR_JOINS.custom : (isStd ? CHAR_JOINS.standard : CHAR_JOINS.unknown);
+        const btn = (val, text, curCond) =>
+          `<button class="${curCond ? "current" : ""}" ${curCond || disabled ? "disabled" : ""}
+            onclick="setChar('${encodeURIComponent(c.path)}',${val})">${text}</button>`;
+        const restore = c.backups > 0
+          ? `<button class="ghost" ${disabled ? "disabled" : ""}
+               onclick="restore('${encodeURIComponent(c.path)}')">Restore backup</button>` : "";
+        const backupText = c.backups > 0 ? ` · ${c.backups} backup${c.backups===1?"":"s"}` : "";
+        return `<div class="card">
+          <div class="row">
+            <div>
+              <span class="name">${c.name.replace(/\.json$/i,"")}</span>${badge(label, cls)}
+              <div class="meta">${joins}${backupText}</div>
+            </div>
+            <div class="actions">
+              <span class="set-label">Set to join:</span>
+              ${btn(0,"Standard / Hard", isStd)}
+              ${btn(3,"Custom", isCus)}
+              ${restore}
+            </div>
+          </div>
+        </div>`;
+      }).join("");
+    }
+    renderSkills();
+  }
+
+  let skillsAccepted = false;
+
+  function renderSkills() {
+    $("skillsGate").classList.toggle("hidden", skillsAccepted);
+    $("skillsBody").classList.toggle("hidden", !skillsAccepted);
+    if (!skillsAccepted) return;
+
+    const rl = $("reportLink");
+    if (rl && state.app && state.app.repo_url) rl.href = state.app.repo_url + "/issues";
+
+    const chars = state.characters || [];
+    const el = $("skillsChars");
+    if (!chars.length) { el.innerHTML = '<div class="empty">No characters found.</div>'; return; }
+    const disabled = state.game_running;
+
+    el.innerHTML = chars.map((c) => {
+      const skills = c.skills || [];
+      if (!skills.length) return "";
+      let rows = "", lastCat = null;
+      for (const s of skills) {
+        if (s.category !== lastCat) { rows += `<div class="cat-head">${s.category}</div>`; lastCat = s.category; }
+        const pe = encodeURIComponent(c.path), ge = encodeURIComponent(s.guid), ne = encodeURIComponent(s.name);
+        rows += `<div class="skill-row">
+          <div><span class="skill-name">${s.name}</span></div>
+          <div class="skill-lvl">Level ${s.level}</div>
+          <div class="skill-edit">
+            <input type="number" min="1" max="99" value="${s.level}" id="in-${s.guid}">
+            <button ${disabled?"disabled":""} onclick="setSkillFromInput('${pe}','${ge}','${ne}',${s.level})">Set</button>
+            <button ${disabled?"disabled":""} onclick="setSkill('${pe}','${ge}','${ne}',${s.level},99)">Max</button>
+          </div>
+        </div>`;
+      }
+      return `<div class="card"><div class="name" style="margin-bottom:4px">${c.name.replace(/\.json$/i,"")}</div>${rows}</div>`;
+    }).join("");
+  }
+
+  function setSkillFromInput(pe, ge, ne, cur) {
+    const input = document.getElementById("in-" + decodeURIComponent(ge));
+    const target = parseInt(input.value, 10);
+    if (!(target >= 1 && target <= 99)) { toast("Enter a level between 1 and 99", "err"); return; }
+    setSkill(pe, ge, ne, cur, target);
+  }
+
+  async function setSkill(pe, ge, ne, cur, target) {
+    if (busy) return;
+    const name = decodeURIComponent(ne);
+    if (target === cur) { toast(`${name} is already level ${cur}`, "ok"); return; }
+    const ok = await confirmDialog(`Set ${name} from level ${cur} to ${target}?`);
+    if (!ok) return;
+    busy = true;
+    try {
+      const r = await api("set_skill_level", decodeURIComponent(pe), decodeURIComponent(ge), target);
+      handle(r, `${name} set to level ${target}`);
+    } finally { busy = false; }
+  }
+
+  function switchTab(which) {
+    $("tabMain").classList.toggle("active", which === "main");
+    $("tabSkills").classList.toggle("active", which === "skills");
+    $("viewMain").classList.toggle("hidden", which !== "main");
+    $("viewSkills").classList.toggle("hidden", which !== "skills");
+  }
+
+  async function refresh() {
+    state = await api("get_state");
+    render();
+  }
+
+  async function setWorld(pathEnc, mode) {
+    if (busy) return;
+    const ok = await confirmDialog(`Set "${worldName(pathEnc)}" to ${cap(mode)}?`);
+    if (!ok) return;
+    busy = true;
+    try {
+      const r = await api("set_world_mode", decodeURIComponent(pathEnc), mode);
+      handle(r, `World set to ${cap(mode)}`);
+    } finally { busy = false; }
+  }
+
+  async function setChar(pathEnc, value) {
+    if (busy) return;
+    const joinLabel = value === 3 ? "Custom worlds" : "Standard & Hard worlds";
+    const ok = await confirmDialog(`Set "${charName(pathEnc)}" to join ${joinLabel}?`);
+    if (!ok) return;
+    busy = true;
+    try {
+      const r = await api("set_char_type", decodeURIComponent(pathEnc), value);
+      handle(r, `Character set to ${value === 3 ? "Custom" : "Standard"}`);
+    } finally { busy = false; }
+  }
+
+  async function chooseFolder() {
+    const r = await api("choose_save_folder");
+    if (r.ok) { toast("Save folder set", "ok"); await refresh(); }
+    else if (!r.cancelled) { toast(r.error || "Couldn't set folder", "err"); }
+  }
+
+  async function restore(pathEnc) {
+    if (busy) return; busy = true;
+    try {
+      const r = await api("restore_backup", decodeURIComponent(pathEnc));
+      if (r.ok) toast("Restored from " + r.restored_from, "ok");
+      else toast(r.error, "err");
+      await refresh();
+    } finally { busy = false; }
+  }
+
+  function handle(r, okMsg) {
+    if (r.ok) {
+      toast(r.unchanged ? r.message : (okMsg + (r.backup ? " · backup saved" : "")), "ok");
+    } else {
+      toast(r.error || "Something went wrong", "err");
+    }
+    refresh();
+  }
+
+  function boot() {
+    // App-launch acknowledgement blocks everything until accepted.
+    $("appAgree").addEventListener("change", (e) => { $("appContinue").disabled = !e.target.checked; });
+    $("appContinue").addEventListener("click", () => { $("appGate").classList.add("hidden"); });
+
+    $("chooseFolder").addEventListener("click", chooseFolder);
+    $("tabMain").addEventListener("click", () => switchTab("main"));
+    $("tabSkills").addEventListener("click", () => switchTab("skills"));
+    // Advanced tab is hidden until the user opts in to reveal it.
+    $("revealAdvanced").addEventListener("click", () => {
+      $("tabSkills").classList.remove("hidden");
+      $("revealAdvanced").parentElement.classList.add("hidden");
+      switchTab("skills");
+    });
+    $("gateAgree").addEventListener("change", (e) => { $("gateContinue").disabled = !e.target.checked; });
+    $("gateContinue").addEventListener("click", () => { skillsAccepted = true; renderSkills(); });
+    if (window.pywebview && window.pywebview.api) {
+      refresh();
+    } else {
+      window.addEventListener("pywebviewready", refresh, { once: true });
+    }
+  }
+  boot();
+</script>
+</body>
+</html>

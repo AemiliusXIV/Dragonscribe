@@ -1,4 +1,4 @@
-# Local AI-assistant artifacts — not for public repo
+# Local AI-assistant artifacts (not for public repo)
 CLAUDE.md
 .claude/
 .claudeignore
@@ -11,10 +11,9 @@ __pycache__/
 venv/
 env/
 
-# PyInstaller build output
+# PyInstaller build output (the committed dragonscribe.spec is source, not output)
 build/
 dist/
-*.spec
 
 # Editor/OS cruft
 .vscode/

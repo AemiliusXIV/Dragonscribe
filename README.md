@@ -87,11 +87,6 @@ into other projects, in source or compiled form, without explicit written
 permission. Forks must preserve this license and credit the original author. See
 [LICENSE](LICENSE) for the full terms.
 
-The save-format research this builds on was pioneered by the community; the
-world-mode and `char_type` mechanics were first documented by
-[haithemobeidi](https://github.com/haithemobeidi/RSDragonWilds-WorldEditor).
-Dragonscribe is an independent clean-room reimplementation. See [NOTICE](NOTICE).
-
 This project is not affiliated with or endorsed by Jagex Limited. Editing saves
 with third-party tools may breach the RuneScape: Dragonwilds Terms of Service;
 use is entirely at your own risk. RuneScape and RuneScape: Dragonwilds are

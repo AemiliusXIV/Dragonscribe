@@ -41,12 +41,25 @@ and at your own risk. As always, a backup is written first.
 1. Download the latest `Dragonscribe-x.x.x.x.zip` from the
    [Releases page](https://github.com/AemiliusXIV/Dragonscribe/releases).
 2. Unzip it anywhere.
-3. Run `Dragonscribe.exe`.
+3. Double-click `Unblock-Dragonscribe.bat` once (see below for why).
+4. Run `Dragonscribe.exe`.
 
 The app is unsigned, so on first launch Windows SmartScreen may warn about an
 "unknown publisher." Click **More info → Run anyway**. Some antivirus tools also
 flag freshly built PyInstaller apps as a false positive; the source is here if
 you'd rather build it yourself.
+
+### "Failed to load Python DLL ... LoadLibrary: Access is denied"
+
+Windows tags anything downloaded through a browser as "from the internet," and
+that tag can spread to every file when the zip is extracted. With it in place,
+Windows blocks the app from loading its own bundled DLLs and it fails with this
+exact error on launch. It isn't a corrupted download or a bug in the exe: the
+included `Unblock-Dragonscribe.bat` removes the tag from every file in the
+folder. Run it once, then launch `Dragonscribe.exe` normally.
+
+If you'd rather do it by hand: right-click the zip before extracting, open
+**Properties**, tick **Unblock**, then extract.
 
 ## How to use it
 

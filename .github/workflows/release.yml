@@ -45,6 +45,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = "${{ github.ref_name }}"
+          Copy-Item packaging/Unblock-Dragonscribe.bat dist/Dragonscribe/
           Compress-Archive -Path dist/Dragonscribe/* -DestinationPath "Dragonscribe-$tag.zip"
           "ASSET=Dragonscribe-$tag.zip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 

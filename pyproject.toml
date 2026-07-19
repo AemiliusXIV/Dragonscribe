@@ -1,6 +1,6 @@
 [project]
 name = "dragonscribe"
-version = "0.1.0.0"
+version = "0.1.0.1"
 description = "A save editor for RuneScape: Dragonwilds"
 readme = "README.md"
 requires-python = ">=3.10"
